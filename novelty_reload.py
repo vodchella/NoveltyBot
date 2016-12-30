@@ -117,10 +117,10 @@ def login(user, password):
                    {
                        'login': user,
                        'pwd': password,
-                       'time': int(time.time() * 1000),
-                       'timeOffset': 360,
-                       'clear': 0,
-                       'RequestType': 'login'
+                       # 'time': int(time.time() * 1000),
+                       # 'timeOffset': 360,
+                       # 'clear': 0,
+                       'RequestType': 'authenticate'
                    },
                    return_resp_obj=True)
     if resp:
@@ -252,3 +252,7 @@ if __name__ == '__main__':
                     write_stdout(rspace('Выходим из %s.novelty.kz...' % current_subdomain, fsl))
                     logout(session_id)
                     print('Ok\n')
+    if os.name == 'nt':
+        print('Нажмите любую клавишу для завершения работы...')
+        import msvcrt
+        msvcrt.getch()
