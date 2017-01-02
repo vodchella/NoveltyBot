@@ -1,14 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import os
-import sys
-import time
-import ssl
 import argparse
+import os
+import ssl
+import sys
 import urllib.request
-from urllib.error import HTTPError
 from getpass import getpass
+from urllib.error import HTTPError
 
 SERVERS = [
     # Тестовые
