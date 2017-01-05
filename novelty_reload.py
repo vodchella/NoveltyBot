@@ -7,7 +7,7 @@ import ssl
 import urllib.request
 from getpass import getpass
 from urllib.error import HTTPError
-from pkg.utils.output import write_stdout, write_stderr
+from pkg.utils.console import write_stdout, write_stderr
 from cfg.external import get_smbcredentials
 from cfg.defines import SERVERS, BASE_URLS, SMB_CRED_FILE
 
