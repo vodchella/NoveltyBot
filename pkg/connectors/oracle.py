@@ -2,14 +2,9 @@
 # -*- coding: utf-8 -*-
 
 import operator
-from pkg.utils.console import module_not_installed, panic
-
-
-last_module = ('cx_Oracle', 'http://cx-oracle.sourceforge.net/')
-try:
-    import cx_Oracle
-except ImportError:
-    module_not_installed(last_module[0], last_module[1])
+from pkg.utils.console import panic
+from pkg.utils.modules import import_nonstandart_module
+cx_Oracle = import_nonstandart_module('cx_Oracle')
 
 
 class Oracle:

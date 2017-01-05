@@ -25,16 +25,13 @@ def get_raised_error():
         return e[-1:][0]
 
 
-def panic(msg=None):
+def panic(msg=None, show_original_error=False):
     if not msg:
         msg = get_raised_error()
+    elif show_original_error:
+        write_stderr(get_raised_error())
     write_stderr(msg)
     sys.exit(1)
-
-
-def module_not_installed(module_name, project_url, install_command="pip3"):
-    panic("Module '%(module)s' isn't installed. Install it with 'sudo %(cmd)s install %(module)s' %(url)s\n" %
-          {"module": module_name, "url": "(%s)" % project_url if len(project_url) > 0 else "", "cmd": install_command})
 
 
 class Steps:

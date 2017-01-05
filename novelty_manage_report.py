@@ -41,29 +41,29 @@ if __name__ == '__main__':
 
     cred = get_smbcredentials()
     user_name = cred[0] if cred else None
+    if user_name:
+        if args.template:
+            report_data = None
+            try:
+                report_data = read_file(args.template)
+            except FileNotFoundError:
+                panic('Не найден шаблон отчёта: "%s"\n' % args.template)
 
-    if args.template:
-        report_data = None
-        try:
-            report_data = read_file(args.template)
-        except FileNotFoundError:
-            panic('Не найден шаблон отчёта: "%s"\n' % args.template)
-
-        if args.connection:
-            if args.template_id:
-                steps = Steps('Соединяемся с Oracle')
-                with Oracle(args.connection) as db:
-                    def update_report_body(cur):
-                        cur.execute(SET_USER_ID, user_name=user_name, script_name=os.path.split(__file__)[1])
-                        cur.execute(UPDATE_REPORT_BODY, clob_data=report_data.encode(), id=args.template_id)
-                        return cur.rowcount >= 1
-                    steps.finish_one_and_do_next('Обновляем тело отчёта')
-                    steps.finish_one_and_do_next('Закрываем соединение', db.execute(update_report_body))
-                steps.finish_one()
-                write_stdout('\n')
+            if args.connection:
+                if args.template_id:
+                    steps = Steps('Соединяемся с Oracle')
+                    with Oracle(args.connection) as db:
+                        def update_report_body(cur):
+                            cur.execute(SET_USER_ID, user_name=user_name, script_name=os.path.split(__file__)[1])
+                            cur.execute(UPDATE_REPORT_BODY, clob_data=report_data.encode(), id=args.template_id)
+                            return cur.rowcount >= 1
+                        steps.finish_one_and_do_next('Обновляем тело отчёта')
+                        steps.finish_one_and_do_next('Закрываем соединение', db.execute(update_report_body))
+                    steps.finish_one()
+                    write_stdout('\n')
+                else:
+                    write_stderr('Не указан идентификатор отчёта\n')
             else:
-                write_stderr('Не указан идентификатор отчёта\n')
+                write_stderr('Не указана строка подключения к БД\n')
         else:
-            write_stderr('Не указана строка подключения к БД\n')
-    else:
-        write_stderr('Не указан путь к файлу шаблона\n')
+            write_stderr('Не указан путь к файлу шаблона\n')
