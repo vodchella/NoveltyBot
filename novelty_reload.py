@@ -88,15 +88,13 @@ if __name__ == '__main__':
 
         if usr:
             for subdomain in SERVERS[srv_id - 1]['subdomains']:
-                success = False
                 steps = Steps('Авторизируемся в %s.novelty.kz' % subdomain)
                 with Novelty(subdomain, usr, pwd) as ws:
                     if ws.is_authentificated():
                         steps.finish_one_and_do_next('Перезагружаем метаданные')
                         steps.finish_one(ws.reload())
                         steps.next('Выходим из %s.novelty.kz' % subdomain)
-                        success = True
-                steps.finish_one(success)
+                steps.finish_one()
                 write_stdout('\n')
     if os.name == 'nt':
         print('Нажмите любую клавишу для завершения работы...')
