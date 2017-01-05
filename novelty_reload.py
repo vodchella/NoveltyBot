@@ -4,93 +4,17 @@
 import argparse
 import os
 import ssl
-import sys
 import urllib.request
 from getpass import getpass
 from urllib.error import HTTPError
+from pkg.utils.output import write_stdout, write_stderr
+from cfg.external import get_smbcredentials
+from cfg.defines import SERVERS, BASE_URLS, SMB_CRED_FILE
 
-SERVERS = [
-    # Тестовые
-    {
-        'name': 'Тестовый Аско',
-        'subdomains': ['testasko']
-    },
-    {
-        'name': 'Тестовый Евразия',
-        'subdomains': ['testeur']
-    },
-    {
-        'name': 'Тестовый Интертич',
-        'subdomains': ['testinter']
-    },
-    {
-        'name': 'Тестовый Казахмыс',
-        'subdomains': ['testkmic']
-    },
-    {
-        'name': 'Тестовый Компетенц',
-        'subdomains': ['testkompetenz']
-    },
-    {
-        'name': 'Тестовый Номад',
-        'subdomains': ['testnomad']
-    },
-    {
-        'name': 'Тестовый Нурполис',
-        'subdomains': ['testnur']
-    },
-    # Боевые
-    {
-        'name': 'Аско',
-        'subdomains': ['asko', 'asko2']
-    },
-    {
-        'name': 'Евразия',
-        'subdomains': ['eur', 'eur2']
-    },
-    {
-        'name': 'Интертич',
-        'subdomains': ['inter', 'inter2']
-    },
-    {
-        'name': 'Казахмыс',
-        'subdomains': ['kmic', 'kmic2']
-    },
-    {
-        'name': 'Компетенц',
-        'subdomains': ['kompetenz', 'kompetenz2']
-    },
-    {
-        'name': 'Номад',
-        'subdomains': ['nomad', 'nomad2']
-    },
-    {
-        'name': 'Нурполис',
-        'subdomains': ['nur', 'nur2']
-    },
-    {
-        'name': 'Novelty',
-        'subdomains': ['home', 'home2']
-    }
-]
-BASE_URLS = {
-    'request_handler': 'https://%s.novelty.kz/RequestHandler',
-    'reload': 'https://%s.novelty.kz/reload.jsp'
-}
-SMB_CRED_FILE = '.smbcredentials'
+
 G_CONTEXT = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
 
 current_subdomain = ''
-
-
-def write_stderr(line):
-    sys.stderr.write(line)
-    sys.stderr.flush()
-
-
-def write_stdout(line):
-    sys.stdout.write(line)
-    sys.stdout.flush()
 
 
 def request(base_url, req_data, headers=None, return_resp_obj=False, method='POST'):
@@ -143,20 +67,6 @@ def reload(sess_id):
 
 def rspace(s, l):
     return s.ljust(l, ' ')
-
-
-def get_smbcredentials(file_name=None):
-    fname = file_name
-    if not file_name:
-        fname = '%s/%s' % (os.path.expanduser('~'), SMB_CRED_FILE)
-    try:
-        f = open(fname, 'r')
-        lines = [s.strip('\n')[s.find('=') + 1:].strip() for s in f.readlines()]
-        f.close()
-        return lines
-    except FileNotFoundError:
-        write_stderr('Не найден файл с данными для авторизации: %s\n' % fname)
-        return []
 
 
 def list_servers():
