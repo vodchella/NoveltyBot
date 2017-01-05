@@ -89,20 +89,26 @@ if __name__ == '__main__':
 
         if usr:
             for subdomain in SERVERS[srv_id - 1]['subdomains']:
+                success = False
                 first_string = 'Авторизируемся в %s.novelty.kz...  ' % subdomain
                 fsl = len(first_string)
                 write_stdout(first_string)
-                ws = Novelty(subdomain)
-                session_id = ws.login(usr, pwd)
-                if session_id:
-                    print('Ok')
-                    write_stdout(rspace('Перезагружаем метаданные...', fsl))
-                    result = ws.reload()
-                    if result:
+                with Novelty(subdomain, usr, pwd) as ws:
+                    if ws.is_authentificated():
                         print('Ok')
-                    write_stdout(rspace('Выходим из %s.novelty.kz...' % subdomain, fsl))
-                    ws.logout()
+                        write_stdout(rspace('Перезагружаем метаданные...', fsl))
+                        result = ws.reload()
+                        if result:
+                            print('Ok')
+                        else:
+                            print('Fail')
+                        # logout() будет автоматически вызван после блока with
+                        write_stdout(rspace('Выходим из %s.novelty.kz...' % subdomain, fsl))
+                        success = True
+                if success:
                     print('Ok\n')
+                else:
+                    print('Fail\n')
     if os.name == 'nt':
         print('Нажмите любую клавишу для завершения работы...')
         import msvcrt

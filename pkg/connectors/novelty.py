@@ -2,21 +2,42 @@
 # -*- coding: utf-8 -*-
 
 from pkg.utils.http import request
-from cfg.defines import BASE_URLS
+
+BASE_URLS = {
+    'request_handler': 'https://%s.novelty.kz/RequestHandler',
+    'reload': 'https://%s.novelty.kz/reload.jsp'
+}
 
 
 class Novelty:
     subdomain = None
     session_id = None
+    user = None
+    password = None
 
-    def __init__(self, subdomain):
+    def __init__(self, subdomain, user=None, password=None, signin_now=True):
         self.subdomain = subdomain
+        self.user = user
+        self.password = password
+        if signin_now and user:
+            self.login()
 
-    def login(self, user, password):
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if self.is_authentificated():
+            self.logout()
+            self.session_id = None
+
+    def is_authentificated(self):
+        return self.session_id is not None
+
+    def login(self):
         resp = request(BASE_URLS['request_handler'] % self.subdomain,
                        {
-                           'login': user,
-                           'pwd': password,
+                           'login': self.user,
+                           'pwd': self.password,
                            # Закомментированные параметры — для web-метода login
                            # 'time': int(time.time() * 1000),
                            # 'timeOffset': 360,

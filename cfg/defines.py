@@ -68,9 +68,4 @@ SERVERS = [
     }
 ]
 
-BASE_URLS = {
-    'request_handler': 'https://%s.novelty.kz/RequestHandler',
-    'reload': 'https://%s.novelty.kz/reload.jsp'
-}
-
 SMB_CRED_FILE = '.smbcredentials'
