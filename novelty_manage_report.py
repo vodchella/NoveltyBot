@@ -3,18 +3,12 @@
 
 import os
 import argparse
-from pkg.utils.console import module_not_installed, panic, write_stderr
+from pkg.connectors.oracle import Oracle
+from pkg.utils.console import Steps, panic, write_stderr, write_stdout
 from pkg.utils.files import read_file
 from cfg.external import get_smbcredentials
 from cfg.defines import SMB_CRED_FILE
 from pkg.sql.queries import SET_USER_ID, UPDATE_REPORT_BODY
-
-
-last_module = ('cx_Oracle', 'http://cx-oracle.sourceforge.net/')
-try:
-    import cx_Oracle
-except ImportError:
-    module_not_installed(last_module[0], last_module[1])
 
 
 def args_parse():
@@ -53,17 +47,20 @@ if __name__ == '__main__':
         try:
             report_data = read_file(args.template)
         except FileNotFoundError:
-            panic('Не найден шаблон отчёта: %s\n' % args.template)
+            panic('Не найден шаблон отчёта: "%s"\n' % args.template)
 
         if args.connection:
             if args.template_id:
-                con = cx_Oracle.connect(args.connection)
-                cur = con.cursor()
-                cur.execute(SET_USER_ID, user_name=user_name, script_name=os.path.split(__file__)[1])
-                cur.execute(UPDATE_REPORT_BODY, clob_data=report_data.encode(), id=args.template_id)
-                print('Обновлено записей: %s' % cur.rowcount)
-                con.commit()
-                con.close()
+                steps = Steps('Соединяемся с Oracle')
+                with Oracle(args.connection) as db:
+                    def update_report_body(cur):
+                        cur.execute(SET_USER_ID, user_name=user_name, script_name=os.path.split(__file__)[1])
+                        cur.execute(UPDATE_REPORT_BODY, clob_data=report_data.encode(), id=args.template_id)
+                        return cur.rowcount >= 1
+                    steps.finish_one_and_do_next('Обновляем тело отчёта')
+                    steps.finish_one_and_do_next('Закрываем соединение', db.execute(update_report_body))
+                steps.finish_one()
+                write_stdout('\n')
             else:
                 write_stderr('Не указан идентификатор отчёта\n')
         else:

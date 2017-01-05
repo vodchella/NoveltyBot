@@ -5,15 +5,9 @@ import argparse
 import os
 from getpass import getpass
 from pkg.connectors.novelty import Novelty
-from pkg.utils.console import write_stdout, write_stderr
-from pkg.utils.strings import rspace
+from pkg.utils.console import Steps, write_stdout, write_stderr
 from cfg.external import get_smbcredentials
 from cfg.defines import SERVERS, SMB_CRED_FILE
-
-
-def list_servers():
-    for (num, srv) in enumerate(SERVERS, 1):
-        print('[%02d]  %s' % (num, srv['name']))
 
 
 def args_parse():
@@ -38,6 +32,11 @@ def args_parse():
         exit()
 
     return arguments
+
+
+def list_servers():
+    for (num, srv) in enumerate(SERVERS, 1):
+        print('[%02d]  %s' % (num, srv['name']))
 
 
 if __name__ == '__main__':
@@ -90,25 +89,15 @@ if __name__ == '__main__':
         if usr:
             for subdomain in SERVERS[srv_id - 1]['subdomains']:
                 success = False
-                first_string = 'Авторизируемся в %s.novelty.kz...  ' % subdomain
-                fsl = len(first_string)
-                write_stdout(first_string)
+                steps = Steps('Авторизируемся в %s.novelty.kz' % subdomain)
                 with Novelty(subdomain, usr, pwd) as ws:
                     if ws.is_authentificated():
-                        print('Ok')
-                        write_stdout(rspace('Перезагружаем метаданные...', fsl))
-                        result = ws.reload()
-                        if result:
-                            print('Ok')
-                        else:
-                            print('Fail')
-                        # logout() будет автоматически вызван после блока with
-                        write_stdout(rspace('Выходим из %s.novelty.kz...' % subdomain, fsl))
+                        steps.finish_one_and_do_next('Перезагружаем метаданные')
+                        steps.finish_one(ws.reload())
+                        steps.next('Выходим из %s.novelty.kz' % subdomain)
                         success = True
-                if success:
-                    print('Ok\n')
-                else:
-                    print('Fail\n')
+                steps.finish_one(success)
+                write_stdout('\n')
     if os.name == 'nt':
         print('Нажмите любую клавишу для завершения работы...')
         import msvcrt

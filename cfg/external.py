@@ -15,5 +15,5 @@ def get_smbcredentials(file_name=None):
         lines = [s.strip('\n')[s.find('=') + 1:].strip() for s in read_file_lines(fname)]
         return lines
     except FileNotFoundError:
-        write_stderr('Не найден файл с данными для авторизации: %s\n' % fname)
+        write_stderr('Не найден файл с данными для авторизации: "%s"\n' % fname)
         return []
