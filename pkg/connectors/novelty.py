@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+import time
 from pkg.utils.http import request
 
 BASE_URLS = {
@@ -38,11 +39,10 @@ class Novelty:
                        {
                            'login': self.__user,
                            'pwd': self.__password,
-                           # Закомментированные параметры — для web-метода login
-                           # 'time': int(time.time() * 1000),
-                           # 'timeOffset': 360,
-                           # 'clear': 0,
-                           'RequestType': 'authenticate'
+                           'time': int(time.time() * 1000),
+                           'timeOffset': 360,
+                           'clear': 0,
+                           'RequestType': 'login'
                        },
                        return_resp_obj=True)
         if resp:
