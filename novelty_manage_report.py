@@ -8,7 +8,7 @@ from pkg.utils.console import Steps, panic, write_stderr, write_stdout
 from pkg.utils.files import read_file
 from cfg.external import get_smbcredentials
 from cfg.defines import SMB_CRED_FILE
-from pkg.sql.queries import SET_USER_ID, UPDATE_REPORT_BODY
+from pkg.sql.queries import SET_USER_ID, UPDATE_REPORT_BODY, GET_REPORT_NAME
 
 
 def args_parse():
@@ -17,6 +17,8 @@ def args_parse():
                                      add_help=False)
     parser.add_argument('-h', '--help',
                         help='Вывести данную справку по входящим параметрам скрипта', action='store_true')
+    parser.add_argument('-o', '--operation', type=str, default='update_template',
+                        help='Тип операции (update_template, get_template_name). По умолчанию update_template')
     parser.add_argument('-t', '--template', type=str,
                         help='Полный путь к файлу шаблона')
     parser.add_argument('-c', '--connection', type=str,
@@ -39,17 +41,24 @@ def args_parse():
 if __name__ == '__main__':
     args = args_parse()
 
+    if not args.connection:
+        panic('Не указана строка подключения к БД\n')
+
+    os.environ['NLS_LANG'] = 'Russian.AL32UTF8'
+
     cred = get_smbcredentials()
     user_name = cred[0] if cred else None
     if user_name:
-        if args.template:
-            report_data = None
-            try:
-                report_data = read_file(args.template)
-            except FileNotFoundError:
-                panic('Не найден шаблон отчёта: "%s"\n' % args.template)
 
-            if args.connection:
+        # Обновление шаблона
+        if args.operation == 'update_template':
+            if args.template:
+                report_data = None
+                try:
+                    report_data = read_file(args.template)
+                except FileNotFoundError:
+                    panic('Не найден шаблон отчёта: "%s"\n' % args.template)
+
                 if args.template_id:
                     steps = Steps('Соединяемся с Oracle')
                     with Oracle(args.connection) as db:
@@ -64,6 +73,23 @@ if __name__ == '__main__':
                 else:
                     write_stderr('Не указан идентификатор отчёта\n')
             else:
-                write_stderr('Не указана строка подключения к БД\n')
+                write_stderr('Не указан путь к файлу шаблона\n')
+
+        # Получение имени шаблона по ID
+        elif args.operation == 'get_template_name':
+            if args.template_id:
+                steps = Steps('Соединяемся с Oracle')
+                with Oracle(args.connection) as db:
+                    def get_report_name(cur):
+                        cur.execute(GET_REPORT_NAME, id=args.template_id)
+                        return '; '.join([row[0] for row in cur]) if cur.rowcount else 'Not found'
+                    steps.finish_one_and_do_next('Получаем имя отчёта')
+                    steps.finish_one(custom_result=db.execute(get_report_name))
+                    steps.next('Закрываем соединение')
+                steps.finish_one()
+                write_stdout('\n')
+            else:
+                write_stderr('Не указан идентификатор отчёта\n')
+
         else:
-            write_stderr('Не указан путь к файлу шаблона\n')
+            write_stderr('Неверно задана операция\n')

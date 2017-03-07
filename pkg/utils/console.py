@@ -48,8 +48,8 @@ class Steps:
     def next(self, string):
         write_stdout(rspace(self.__correct_string(string), self.__first_string_length))
 
-    def finish_one(self, result=True):
-        print('Ok' if result else 'Fail')
+    def finish_one(self, result=True, custom_result=None):
+        print(custom_result if custom_result else 'Ok' if result else 'Fail')
 
     def finish_one_and_do_next(self, string, result=True):
         self.finish_one(result)
