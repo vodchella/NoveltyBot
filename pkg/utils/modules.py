@@ -8,6 +8,11 @@ MODULES = [
     {
         'name': 'cx_Oracle',
         'url': 'http://cx-oracle.sourceforge.net/'
+    },
+    {
+        'name': 'telebot',
+        'pkg': 'pytelegrambotapi',
+        'url': 'https://github.com/eternnoir/pyTelegramBotAPI'
     }
 ]
 

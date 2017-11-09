@@ -10,7 +10,8 @@ from cfg.defines import DEBUG
 G_CONTEXT = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
 
 
-def request(url, req_data, headers=None, return_resp_obj=False, method='POST', ignore_errors=(403, 404)):
+def request(url, req_data, headers=None, return_resp_obj=False,
+            method='POST', ignore_errors=(403, 404), error_callback=None):
     data = urllib.parse.urlencode(req_data) if req_data else None
     if type(data) == str:
         data = data.encode('utf-8')
@@ -23,5 +24,8 @@ def request(url, req_data, headers=None, return_resp_obj=False, method='POST', i
         return resp.read().decode('utf-8')
     except HTTPError as e:
         print(e)
+        err_text = e.read().decode('utf-8')
         if e.code not in ignore_errors or DEBUG:
-            write_stderr(e.read().decode('utf-8') + '\n')
+            write_stderr(err_text + '\n')
+        if error_callback:
+            error_callback(Exception(err_text))
