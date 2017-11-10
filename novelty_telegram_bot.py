@@ -1,14 +1,16 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+import tempfile
 from cfg.external import get_bot_token
 from cfg.defines import BOT_ACTIONS_MAIN, BOT_ACTION_SET_CREDENTIALS, BOT_ACTION_RELOAD_METADATA
-from cfg.defines import SERVERS
+from cfg.defines import SERVERS, PID_FILE
 from pkg.connectors.novelty import Novelty
 from pkg.utils.modules import import_nonstandart_module
 from pkg.utils.console import write_stdout
 from pkg.utils.decorators.handle_exceptions import handle_exceptions
 telebot = import_nonstandart_module('telebot')
+pid = import_nonstandart_module('pid')
 
 
 bot = telebot.TeleBot(get_bot_token())
@@ -95,5 +97,6 @@ def handler_set_credentials(message):
 
 
 if __name__ == '__main__':
-    write_stdout('Бот начал работу...\n')
-    bot.polling(none_stop=True)
+    with pid.PidFile(PID_FILE, piddir=tempfile.gettempdir()):
+        write_stdout('Бот начал работу...\n')
+        bot.polling(none_stop=True)

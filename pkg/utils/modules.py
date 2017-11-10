@@ -13,6 +13,10 @@ MODULES = [
         'name': 'telebot',
         'pkg': 'pytelegrambotapi',
         'url': 'https://github.com/eternnoir/pyTelegramBotAPI'
+    },
+    {
+        'name': 'pid',
+        'url': 'https://github.com/trbs/pid'
     }
 ]
 
