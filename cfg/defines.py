@@ -73,6 +73,93 @@ SERVERS = [
     }
 ]
 
+SERVER_LOCAL_ADDRESS_MAIN = '192.168.1.119'
+SERVER_LOCAL_ADDRESS_RESERVE = '192.168.1.118'
+SERVER_LOCAL_ADDRESS_TEST = '192.168.1.122'
+
+LOCAL_ADDRESSES = {
+    'testasko': {
+        'server': SERVER_LOCAL_ADDRESS_TEST,
+        'jane_name': 'jane_asko'
+    },
+    'testeur': {
+        'server': SERVER_LOCAL_ADDRESS_TEST,
+        'jane_name': 'jane_eur'
+    },
+    'testinter': {
+        'server': SERVER_LOCAL_ADDRESS_TEST,
+        'jane_name': 'jane_inter'
+    },
+    'testkompetenz': {
+        'server': SERVER_LOCAL_ADDRESS_TEST,
+        'jane_name': 'jane_kompetenz'
+    },
+    'testnomad': {
+        'server': SERVER_LOCAL_ADDRESS_TEST,
+        'jane_name': 'jane_nomad'
+    },
+    'testnur': {
+        'server': SERVER_LOCAL_ADDRESS_TEST,
+        'jane_name': 'jane_nur'
+    },
+    'asko': {
+        'server': SERVER_LOCAL_ADDRESS_MAIN,
+        'jane_name': 'jane_asko'
+    },
+    'asko2': {
+        'server': SERVER_LOCAL_ADDRESS_RESERVE,
+        'jane_name': 'jane_asko'
+    },
+    'eur': {
+        'server': SERVER_LOCAL_ADDRESS_MAIN,
+        'jane_name': 'jane_eur'
+    },
+    'eur2': {
+        'server': SERVER_LOCAL_ADDRESS_RESERVE,
+        'jane_name': 'jane_eur'
+    },
+    'inter': {
+        'server': SERVER_LOCAL_ADDRESS_MAIN,
+        'jane_name': 'jane_inter'
+    },
+    'inter2': {
+        'server': SERVER_LOCAL_ADDRESS_RESERVE,
+        'jane_name': 'jane_inter'
+    },
+    'kompetenz': {
+        'server': SERVER_LOCAL_ADDRESS_MAIN,
+        'jane_name': 'jane_kompetenz'
+    },
+    'kompetenz2': {
+        'server': SERVER_LOCAL_ADDRESS_RESERVE,
+        'jane_name': 'jane_kompetenz'
+    },
+    'nomad': {
+        'server': SERVER_LOCAL_ADDRESS_MAIN,
+        'jane_name': 'jane_nomad'
+    },
+    'nomad2': {
+        'server': SERVER_LOCAL_ADDRESS_RESERVE,
+        'jane_name': 'jane_nomad'
+    },
+    'nur': {
+        'server': SERVER_LOCAL_ADDRESS_MAIN,
+        'jane_name': 'jane_nur'
+    },
+    'nur2': {
+        'server': SERVER_LOCAL_ADDRESS_RESERVE,
+        'jane_name': 'jane_nur'
+    },
+    'home': {
+        'server': SERVER_LOCAL_ADDRESS_MAIN,
+        'jane_name': 'jane_home'
+    },
+    'home2': {
+        'server': SERVER_LOCAL_ADDRESS_RESERVE,
+        'jane_name': 'jane_home'
+    }
+}
+
 SMB_CRED_FILE = '.smbcredentials'
 PID_FILE = 'novelty_telegram_bot'
 BOT_TOKEN_FILE = '.novelty_telegram_bot_token'

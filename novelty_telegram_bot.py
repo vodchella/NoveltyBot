@@ -65,7 +65,11 @@ def handler_select_server(c):
                 bot.send_message(c.message.chat.id,
                                  'Начинаю перезагрузку данных на сервере "%s"...' % (server['name']))
                 for subdomain in server['subdomains']:
-                    with Novelty(subdomain, session['login'], session['password'], raise_errors=True) as ws:
+                    with Novelty(subdomain,
+                                 session['login'],
+                                 session['password'],
+                                 raise_errors=True,
+                                 use_local_addr=True) as ws:
                         if ws.is_authentificated():
                             ws.reload()
                 bot.send_message(c.message.chat.id,

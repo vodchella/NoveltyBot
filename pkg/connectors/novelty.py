@@ -3,11 +3,20 @@
 
 import time
 from pkg.utils.http import request
+from cfg.defines import LOCAL_ADDRESSES
+
 
 BASE_URLS = {
     'request_handler': 'https://%s.novelty.kz/RequestHandler',
-    'reload': 'https://%s.novelty.kz/reload.jsp'
+    'reload': 'https://%s.novelty.kz/reload.jsp',
+    'local_request_handler': 'http://%s:8080/%s/RequestHandler',
+    'local_reload': 'http://%s:8080/%s/reload.jsp'
 }
+
+
+def subdomain_to_local_url(subdomain, url_type):
+    rec = LOCAL_ADDRESSES[subdomain]
+    return BASE_URLS[url_type] % (rec['server'], rec['jane_name'])
 
 
 class Novelty:
@@ -16,11 +25,18 @@ class Novelty:
     __user = None
     __password = None
 
-    def __init__(self, subdomain, user=None, password=None, signin_now=True, raise_errors=False):
+    def __init__(self, subdomain, user=None, password=None, signin_now=True, raise_errors=False, use_local_addr=False):
         self.__subdomain = subdomain
         self.__user = user
         self.__password = password
         self.__error_callback = self.__internal_error_callback if raise_errors else None
+        if use_local_addr:
+            self.__url_req_handler = subdomain_to_local_url(self.__subdomain, 'local_request_handler')
+            self.__url_reload = subdomain_to_local_url(self.__subdomain, 'local_reload')
+        else:
+            self.__url_req_handler = BASE_URLS['request_handler'] % self.__subdomain
+            self.__url_reload = BASE_URLS['reload'] % self.__subdomain
+        self.__use_https = not use_local_addr
         if signin_now and user:
             self.login()
 
@@ -40,7 +56,7 @@ class Novelty:
 
     def login(self):
         self.__session_id = None
-        resp = request(BASE_URLS['request_handler'] % self.__subdomain,
+        resp = request(self.__url_req_handler,
                        {
                            'login': self.__user,
                            'pwd': self.__password,
@@ -56,14 +72,14 @@ class Novelty:
             return self.__session_id
 
     def logout(self):
-        request(BASE_URLS['request_handler'] % self.__subdomain,
+        request(self.__url_req_handler,
                 {'RequestType': 'logout'},
                 headers={'Cookie': 'web_session_id=%s' % self.__session_id},
                 error_callback=self.__error_callback)
         self.__session_id = None
 
     def reload(self):
-        return request(BASE_URLS['reload'] % self.__subdomain, {},
+        return request(self.__url_reload, {},
                        headers={
                            'Cookie': 'web_session_id=%s' % self.__session_id
                        },
