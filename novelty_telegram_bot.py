@@ -7,6 +7,7 @@ from cfg.defines import SERVERS
 from pkg.connectors.novelty import Novelty
 from pkg.utils.modules import import_nonstandart_module
 from pkg.utils.console import write_stdout
+from pkg.utils.decorators.handle_exceptions import handle_exceptions
 telebot = import_nonstandart_module('telebot')
 
 
@@ -19,6 +20,7 @@ def get_session(user_id):
     return sessions.get(user_id)
 
 
+@handle_exceptions
 def send_menu_main(chat_id):
     keyboard = telebot.types.InlineKeyboardMarkup(row_width=1)
     keyboard.add(*[telebot.types.InlineKeyboardButton(text=name,
@@ -26,6 +28,7 @@ def send_menu_main(chat_id):
     bot.send_message(chat_id, 'Что хочешь сделать?', reply_markup=keyboard)
 
 
+@handle_exceptions
 def send_menu_select_server(chat_id):
     keyboard = telebot.types.InlineKeyboardMarkup(row_width=1)
     keyboard.add(*[telebot.types.InlineKeyboardButton(text=server['name'],
@@ -39,6 +42,7 @@ def handler_start(message):
 
 
 @bot.callback_query_handler(func=lambda c: c.data in [BOT_ACTION_SET_CREDENTIALS, BOT_ACTION_RELOAD_METADATA])
+@handle_exceptions
 def handler_main_menu_commands(c):
     if c.data == BOT_ACTION_SET_CREDENTIALS:
         msg = bot.send_message(c.message.chat.id, 'На первой строке введи логин, а на второй пароль:')
@@ -48,6 +52,7 @@ def handler_main_menu_commands(c):
 
 
 @bot.callback_query_handler(func=lambda c: c.data[:9] == 'server_id')
+@handle_exceptions
 def handler_select_server(c):
     session = get_session(c.from_user.id)
     if session:
@@ -70,6 +75,7 @@ def handler_select_server(c):
     send_menu_main(c.message.chat.id)
 
 
+@handle_exceptions
 def handler_set_credentials(message):
     global sessions
     lines = message.text.split('\n')
@@ -89,5 +95,5 @@ def handler_set_credentials(message):
 
 
 if __name__ == '__main__':
-    write_stdout('Бот начал работу...')
+    write_stdout('Бот начал работу...\n')
     bot.polling(none_stop=True)

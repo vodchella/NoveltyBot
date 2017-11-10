@@ -17,10 +17,10 @@ def write_stdout(line):
     sys.stdout.flush()
 
 
-def get_raised_error():
+def get_raised_error(full=False):
     e = traceback.format_exception(*sys.exc_info())
-    if DEBUG:
-        return "\n".join(e)
+    if full or DEBUG:
+        return '\n'.join(e)
     else:
         return e[-1:][0]
 
