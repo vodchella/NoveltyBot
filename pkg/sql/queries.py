@@ -10,7 +10,7 @@ begin
   from   users u
   where  u.distinguished_name = :user_name;
   pkg_audit.SetUserID(idSelf);
-  pkg_session_parameters.SetParameter('Format_Call_Stack', 'Invoked by script "' || :script_name || '"');
+  pkg_session_parameters.SetParameter('Format_Call_Stack', '%s');
 end;
 """
 

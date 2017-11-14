@@ -63,7 +63,8 @@ if __name__ == '__main__':
                     steps = Steps('Соединяемся с Oracle')
                     with Oracle(args.connection) as db:
                         def update_report_body(cur):
-                            cur.execute(SET_USER_ID, user_name=user_name, script_name=os.path.split(__file__)[1])
+                            sql = SET_USER_ID % 'Invoked by script "\' || :script_name || \'"'
+                            cur.execute(sql, user_name=user_name, script_name=os.path.split(__file__)[1])
                             cur.execute(UPDATE_REPORT_BODY, clob_data=report_data.encode(), id=args.template_id)
                             return cur.rowcount >= 1
                         steps.finish_one_and_do_next('Обновляем тело отчёта')
