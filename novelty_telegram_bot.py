@@ -253,21 +253,22 @@ def handler_select_server(c):
 @handle_exceptions
 def handler_set_credentials(message):
     global sessions
-    lines = message.text.split('\n')
-    if len(lines) != 2:
-        msg = bot.send_message(message.chat.id,
-                               EMOJI_CROSS_MARK +
-                               ' Я же говорю, на первой строчке логин, а на второй пароль. Давай ещё раз:')
-        bot.register_next_step_handler(msg, handler_set_credentials)
-    else:
-        user_id = message.from_user.id
-        sessions[user_id] = {
-            'telegram_id': user_id,
-            'login': lines[0],
-            'password': lines[1]
-        }
-        bot.send_message(message.chat.id, EMOJI_WHITE_HEAVY_CHECK_MARK + ' Отлично, данные для авторизации приняты!')
-        send_menu_main(message.chat.id)
+    if message.text:
+        lines = message.text.split('\n')
+        if len(lines) != 2:
+            msg = bot.send_message(message.chat.id,
+                                   EMOJI_CROSS_MARK +
+                                   ' Я же говорю, на первой строчке логин, а на второй пароль. Давай ещё раз:')
+            bot.register_next_step_handler(msg, handler_set_credentials)
+        else:
+            user_id = message.from_user.id
+            sessions[user_id] = {
+                'telegram_id': user_id,
+                'login': lines[0],
+                'password': lines[1]
+            }
+            bot.send_message(message.chat.id, EMOJI_WHITE_HEAVY_CHECK_MARK + ' Отлично, данные для авторизации приняты!')
+            send_menu_main(message.chat.id)
 
 
 if __name__ == '__main__':
