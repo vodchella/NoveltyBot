@@ -176,6 +176,25 @@ def handler_main_menu_commands(c):
         send_menu_select_server(c.message.chat.id, c.data)
 
 
+def check_novelty_auth(chat_id, session, server):
+    try:
+        bot.send_message(chat_id, 'Пытаюсь авторизироваться в Novelty...')
+        subdomain = server['subdomains'][0]
+        with Novelty(subdomain,
+                     session['login'],
+                     session['password'],
+                     raise_errors=True,
+                     use_local_addr=True) as ws:
+            if ws.is_authentificated():
+                bot.send_message(chat_id,
+                                 EMOJI_WHITE_HEAVY_CHECK_MARK +
+                                 ' Авторизация прошла успешно')
+                return True
+    except Exception as e:
+        bot.send_message(chat_id, BOT_MESSAGE_EXCEPTION + str(e))
+        return False
+
+
 @bot.callback_query_handler(func=lambda c: c.data[:9] == 'server_id')
 @handle_exceptions
 def handler_select_server(c):
@@ -191,7 +210,10 @@ def handler_select_server(c):
                 reload_metadata(session, c.message.chat.id)
                 send_menu_main(c.message.chat.id)
             elif action_id == BOT_ACTION_UNSET_RESCINDING_REASON:
-                unset_rescinding_reason(c.message.chat.id)
+                if check_novelty_auth(c.message.chat.id, session, server):
+                    unset_rescinding_reason(c.message.chat.id)
+                else:
+                    send_menu_main(c.message.chat.id)
     else:
         not_authorized(c.message.chat.id)
 
