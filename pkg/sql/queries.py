@@ -31,11 +31,3 @@ set    p.resciding_reason_id = null,
        p.resciding_date = null
 where  p.policy_number in (%s)
 """
-
-UPDATE_REPORT_BODY = """
-update xv_templates x set x.template_body = :clob_data where x.xv_template_id = :id
-"""
-
-GET_REPORT_NAME = """
-select x.template_name from xv_templates x where x.xv_template_id = :id
-"""
