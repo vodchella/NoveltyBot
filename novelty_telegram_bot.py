@@ -274,4 +274,8 @@ if __name__ == '__main__':
     os.environ['NLS_LANG'] = 'Russian.AL32UTF8'
     with pid.PidFile(BOT_PID_FILE, piddir=tempfile.gettempdir()):
         BOT_LOGGER.info('Бот начал работу')
+        BOT_LOGGER.info('ORACLE_HOME: %s' %
+                        (os.environ['ORACLE_HOME'] if 'ORACLE_HOME' in os.environ else None))
+        BOT_LOGGER.info('LD_LIBRARY_PATH: %s' %
+                        (os.environ['LD_LIBRARY_PATH'] if 'LD_LIBRARY_PATH' in os.environ else None))
         bot.polling(none_stop=True)
