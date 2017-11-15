@@ -2,9 +2,31 @@
 # -*- coding: utf-8 -*-
 
 import os
-from pkg.utils.console import write_stderr
+from pkg.utils.console import write_stderr, panic
 from pkg.utils.files import read_file_lines
-from cfg.defines import SMB_CRED_FILE, BOT_TOKEN_FILE
+from pkg.utils.modules import import_one_file
+from cfg.defines import SMB_CRED_FILE, BOT_TOKEN_FILE, BOT_SERVERS_FILE
+
+srv_cfg = None
+
+
+def load_servers_config():
+    global srv_cfg
+    if srv_cfg is None:
+        try:
+            srv_cfg = import_one_file(BOT_SERVERS_FILE)
+        except ImportError:
+            panic('Не удалось загрузить файл конфигурации ' + BOT_SERVERS_FILE, True)
+
+
+def get_servers():
+    load_servers_config()
+    return srv_cfg.SERVERS
+
+
+def get_local_addresses():
+    load_servers_config()
+    return srv_cfg.LOCAL_ADDRESSES
 
 
 def get_smbcredentials(file_name=None):

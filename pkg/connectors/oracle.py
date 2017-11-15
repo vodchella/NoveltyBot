@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 import operator
-from pkg.utils.console import panic
 from pkg.utils.modules import import_nonstandart_module
 cx_Oracle = import_nonstandart_module('cx_Oracle')
 

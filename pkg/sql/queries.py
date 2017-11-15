@@ -14,6 +14,24 @@ begin
 end;
 """
 
+GET_NONEXISTANT_POLICIES = """
+with n as (%s)
+select listagg(n.num, ', ')
+       within group (order by n.num) as num_list,
+       count(*) as cnt
+from   n
+where  not exists (select 1
+                   from   policies p
+                   where  p.policy_number = n.num)
+"""
+
+UPDATE_RESCINDING_REASON_TO_NULL = """
+update policies p
+set    p.resciding_reason_id = null,
+       p.resciding_date = null
+where  p.policy_number in (%s)
+"""
+
 UPDATE_REPORT_BODY = """
 update xv_templates x set x.template_body = :clob_data where x.xv_template_id = :id
 """

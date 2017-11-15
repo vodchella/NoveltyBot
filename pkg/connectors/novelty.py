@@ -3,9 +3,10 @@
 
 import time
 from pkg.utils.http import request
-from cfg.defines import LOCAL_ADDRESSES
+from cfg.external import get_local_addresses
 
 
+LOCAL_ADDRESSES = get_local_addresses()
 BASE_URLS = {
     'request_handler': 'https://%s.novelty.kz/RequestHandler',
     'reload': 'https://%s.novelty.kz/reload.jsp',
