@@ -55,3 +55,6 @@ def get_bot_token(file_name=None):
         return lines[0].strip('\n') if lines else None
     except FileNotFoundError:
         write_stderr('Не найден файл с токеном бота: "%s"\n' % fname)
+
+
+SERVERS = get_servers()

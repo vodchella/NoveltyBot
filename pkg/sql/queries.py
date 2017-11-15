@@ -31,3 +31,7 @@ set    p.resciding_reason_id = null,
        p.resciding_date = null
 where  p.policy_number in (%s)
 """
+
+SELECT_TEXT_FROM_DUAL = """
+select \'%s\' as num from dual
+"""
