@@ -6,9 +6,10 @@ from pkg.utils.modules import import_nonstandart_module
 cx_Oracle = import_nonstandart_module('cx_Oracle')
 
 
-def get_connection_string(server):
+def get_connection_string(server, secure=False):
     db = server['db']
-    return '%s/%s@%s:%s/%s' % (db['user_name'], db['password'], db['address'], db['port'], db['service_name'])
+    password = '*****' if secure else db['password']
+    return '%s/%s@%s:%s/%s' % (db['user_name'], password, db['address'], db['port'], db['service_name'])
 
 
 class Oracle:

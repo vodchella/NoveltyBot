@@ -3,7 +3,7 @@
 
 import tempfile
 import os
-from cfg.defines import PID_FILE
+from cfg.defines import BOT_PID_FILE
 from cfg.external import get_bot_token, get_servers
 from pkg.constants.bot_actions import \
     BOT_ACTIONS_MAIN, \
@@ -12,12 +12,14 @@ from pkg.constants.bot_actions import \
     BOT_ACTION_UNSET_RESCINDING_REASON
 from pkg.constants.bot_messages import BOT_MESSAGE_NOT_AUTHORIZED, BOT_MESSAGE_EXCEPTION
 from pkg.constants.emoji import EMOJI_WHITE_HEAVY_CHECK_MARK, EMOJI_CROSS_MARK
-from pkg.utils.console import write_stdout
 from pkg.utils.decorators.handle_exceptions import handle_exceptions
 from pkg.utils.modules import import_nonstandart_module
+from pkg.utils.logger import BOT_LOGGER
+from pkg.utils.console import get_raised_error
 from pkg.connectors.novelty import Novelty
 from pkg.connectors.oracle import Oracle, get_connection_string
 from pkg.sql.queries import GET_NONEXISTANT_POLICIES, UPDATE_RESCINDING_REASON_TO_NULL, SET_USER_ID
+
 
 telebot = import_nonstandart_module('telebot')
 pid = import_nonstandart_module('pid')
@@ -64,6 +66,8 @@ def reload_metadata(session, chat_id):
         try:
             bot.send_message(chat_id, 'Начинаю перезагрузку данных на сервере "%s"...' % (server['name']))
             for subdomain in server['subdomains']:
+                BOT_LOGGER.info('Пользователь %s перезагружает метаданные на сервере %s' %
+                                (session['login'], subdomain))
                 with Novelty(subdomain,
                              session['login'],
                              session['password'],
@@ -71,10 +75,15 @@ def reload_metadata(session, chat_id):
                              use_local_addr=True) as ws:
                     if ws.is_authentificated():
                         ws.reload()
+                        BOT_LOGGER.info('Пользователь %s успешно перезагрузил метаданные на сервере %s' %
+                                        (session['login'], subdomain))
             bot.send_message(chat_id,
                              EMOJI_WHITE_HEAVY_CHECK_MARK +
                              ' Метаданные на сервере "%s" успешно перезагружены' % (server['name']))
         except Exception as e:
+            err_str = get_raised_error(full=True)
+            BOT_LOGGER.error('Ошибка перезагрузки метаданных пользователем %s на сервере %s:\n%s' %
+                            (session['login'], subdomain, err_str))
             bot.send_message(chat_id, BOT_MESSAGE_EXCEPTION + str(e))
 
 
@@ -106,21 +115,28 @@ def handler_set_policies(message):
         server = get_last_server(session)
         if server:
             connection_string = get_connection_string(server)
+            secure_conn_str = get_connection_string(server, secure=True)
             try:
                 bot.send_message(message.chat.id, 'Начинаю работу с базой данных...')
                 policies = message.text.split('\n')
                 policies_str = ', '.join('\'%s\'' % p for p in policies)
                 policies_tbl = u' union all '.join('select \'%s\' as num from dual' % p for p in policies)
-
+                ticket = get_last_ticket(session)
+                BOT_LOGGER.info('Пользователь %s соединяется с БД %s' %
+                                (session['login'], secure_conn_str))
                 with Oracle(connection_string) as db:
                     def get_nonexistant_policies(cur):
+                        BOT_LOGGER.info('Пользователь %s ищет несуществующие полисы среди (%s): %s' %
+                                        (session['login'], len(policies), policies_str))
                         sql = GET_NONEXISTANT_POLICIES % policies_tbl
                         cur.execute(sql.encode('utf-8'))
                         for row in cur:
                             return row[0], row[1]
 
                     def erase_policies_rescinding_reason(cur):
-                        sql = SET_USER_ID % ('Updated by NoveltyBot; Ticket# %s' % get_last_ticket(session))
+                        BOT_LOGGER.info('Пользователь %s обнуляет причину расторжения у полисов: %s' %
+                                        (session['login'], policies_str))
+                        sql = SET_USER_ID % ('Updated by NoveltyBot; Ticket# %s' % ticket)
                         cur.execute(sql, user_name=session['login'])
                         sql = UPDATE_RESCINDING_REASON_TO_NULL % policies_str
                         cur.execute(sql.encode('utf-8'))
@@ -128,21 +144,30 @@ def handler_set_policies(message):
 
                     p_list, p_count = db.execute(get_nonexistant_policies)
                     if p_count:
+                        BOT_LOGGER.info('Пользователь %s не нашёл некоторые полисы (%s): %s' %
+                                        (session['login'], p_count, policies_str))
                         bot.send_message(message.chat.id,
                                          EMOJI_CROSS_MARK +
                                          ' Некоторые полисы (%s) не найдены: %s' % (p_count, p_list))
 
-                    p_count = db.execute(erase_policies_rescinding_reason)
+                    if p_count == len(policies):
+                        p_count = 0
+                    else:
+                        p_count = db.execute(erase_policies_rescinding_reason)
+                    BOT_LOGGER.info('Пользователь %s изменил полисов по тикету %s: %s' %
+                                    (session['login'], ticket, p_count))
                     bot.send_message(message.chat.id, EMOJI_WHITE_HEAVY_CHECK_MARK + ' Обновлено полисов: %s' % p_count)
 
             except Exception as e:
+                err_str = get_raised_error(full=True)
+                BOT_LOGGER.error('Ошибка при работе с БД %s пользователя %s:\n%s' %
+                                 (secure_conn_str, session['login'], err_str))
                 bot.send_message(message.chat.id, BOT_MESSAGE_EXCEPTION + str(e))
         send_menu_main(message.chat.id)
     else:
         not_authorized(message.chat.id)
 
 
-@handle_exceptions
 def send_menu_main(chat_id):
     keyboard = telebot.types.InlineKeyboardMarkup(row_width=1)
     keyboard.add(*[telebot.types.InlineKeyboardButton(text=name,
@@ -150,7 +175,6 @@ def send_menu_main(chat_id):
     bot.send_message(chat_id, 'Что хочешь сделать?', reply_markup=keyboard)
 
 
-@handle_exceptions
 def send_menu_select_server(chat_id, action_id):
     keyboard = telebot.types.InlineKeyboardMarkup(row_width=1)
     keyboard.add(
@@ -177,9 +201,12 @@ def handler_main_menu_commands(c):
 
 
 def check_novelty_auth(chat_id, session, server):
+    subdomain = '?'
     try:
-        bot.send_message(chat_id, 'Пытаюсь авторизироваться в Novelty...')
         subdomain = server['subdomains'][0]
+        BOT_LOGGER.info('Пользователь %s авторизируется на сервере %s' %
+                        (session['login'], subdomain))
+        bot.send_message(chat_id, 'Пытаюсь авторизироваться в Novelty...')
         with Novelty(subdomain,
                      session['login'],
                      session['password'],
@@ -189,8 +216,13 @@ def check_novelty_auth(chat_id, session, server):
                 bot.send_message(chat_id,
                                  EMOJI_WHITE_HEAVY_CHECK_MARK +
                                  ' Авторизация прошла успешно')
+                BOT_LOGGER.info('Пользователь %s успешно авторизировался на сервере %s' %
+                                (session['login'], subdomain))
                 return True
     except Exception as e:
+        err_str = get_raised_error(full=True)
+        BOT_LOGGER.error('Ошибка при авторизации пользователя %s на сервере %s:\n%s' %
+                         (session['login'], subdomain, err_str))
         bot.send_message(chat_id, BOT_MESSAGE_EXCEPTION + str(e))
         return False
 
@@ -240,6 +272,6 @@ def handler_set_credentials(message):
 
 if __name__ == '__main__':
     os.environ['NLS_LANG'] = 'Russian.AL32UTF8'
-    with pid.PidFile(PID_FILE, piddir=tempfile.gettempdir()):
-        write_stdout('Бот начал работу...\n')
+    with pid.PidFile(BOT_PID_FILE, piddir=tempfile.gettempdir()):
+        BOT_LOGGER.info('Бот начал работу')
         bot.polling(none_stop=True)

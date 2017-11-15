@@ -5,28 +5,33 @@ import os
 from pkg.utils.console import write_stderr, panic
 from pkg.utils.files import read_file_lines
 from pkg.utils.modules import import_one_file
-from cfg.defines import SMB_CRED_FILE, BOT_TOKEN_FILE, BOT_SERVERS_FILE
+from cfg.defines import SMB_CRED_FILE, BOT_TOKEN_FILE, BOT_SETTINGS_FILE
 
-srv_cfg = None
+bot_cfg = None
 
 
-def load_servers_config():
-    global srv_cfg
-    if srv_cfg is None:
+def load_config():
+    global bot_cfg
+    if bot_cfg is None:
         try:
-            srv_cfg = import_one_file(BOT_SERVERS_FILE)
+            bot_cfg = import_one_file(BOT_SETTINGS_FILE)
         except ImportError:
-            panic('Не удалось загрузить файл конфигурации ' + BOT_SERVERS_FILE, True)
+            panic('Не удалось загрузить файл конфигурации ' + BOT_SETTINGS_FILE, True)
+
+
+def get_log_path():
+    load_config()
+    return bot_cfg.LOG_PATH
 
 
 def get_servers():
-    load_servers_config()
-    return srv_cfg.SERVERS
+    load_config()
+    return bot_cfg.SERVERS
 
 
 def get_local_addresses():
-    load_servers_config()
-    return srv_cfg.LOCAL_ADDRESSES
+    load_config()
+    return bot_cfg.LOCAL_ADDRESSES
 
 
 def get_smbcredentials(file_name=None):

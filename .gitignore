@@ -1,3 +1,5 @@
 .idea
 __pycache__
-.novelty_telegram_bot_servers.py
+.novelty_telegram_bot_settings.py
+*.log*
+log
