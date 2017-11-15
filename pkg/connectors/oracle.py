@@ -21,12 +21,9 @@ class Oracle:
         self.__connection_string = connection_string
 
     def __enter__(self):
-        try:
-            self.__connection = cx_Oracle.connect(self.__connection_string)
-            self.__cursor = self.__connection.cursor()
-            return self
-        except cx_Oracle.DatabaseError:
-            panic()
+        self.__connection = cx_Oracle.connect(self.__connection_string)
+        self.__cursor = self.__connection.cursor()
+        return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         map(operator.methodcaller('close'), (self.__cursor, self.__connection))
