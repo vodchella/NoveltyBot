@@ -6,8 +6,11 @@ import os
 from getpass import getpass
 from pkg.connectors.novelty import Novelty
 from pkg.utils.console import Steps, write_stdout, write_stderr
-from cfg.external import get_smbcredentials
-from cfg.defines import SERVERS, SMB_CRED_FILE
+from cfg.external import get_smbcredentials, get_servers
+from cfg.defines import SMB_CRED_FILE
+
+
+SERVERS = get_servers()
 
 
 def args_parse():
