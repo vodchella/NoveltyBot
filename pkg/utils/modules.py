@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+import os
 import importlib
+import importlib.util
 from pkg.utils.console import panic
 
 MODULES = [
@@ -41,3 +43,13 @@ def import_nonstandart_module(module_name):
                                  module['cmd'] if 'cmd' in module.keys() else 'pip3',
                                  module['pkg'] if 'pkg' in module.keys() else None)
     panic('А зачем надо импортировать "%s"? O_O' % module_name)
+
+
+def import_one_file(file_path):
+    full_path_to_module = os.path.expanduser(file_path)
+    module_dir, module_file = os.path.split(full_path_to_module)
+    module_name, module_ext = os.path.splitext(module_file)
+    spec = importlib.util.spec_from_file_location(module_name, full_path_to_module)
+    result = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(result)
+    return result
