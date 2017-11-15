@@ -122,8 +122,8 @@ def handler_set_policies(message):
                 policies_str = ', '.join('\'%s\'' % p for p in policies)
                 policies_tbl = u' union all '.join('select \'%s\' as num from dual' % p for p in policies)
                 ticket = get_last_ticket(session)
-                BOT_LOGGER.info('Пользователь %s соединяется с БД %s' %
-                                (session['login'], secure_conn_str))
+                BOT_LOGGER.info('Пользователь %s соединяется с БД "%s" (%s)' %
+                                (session['login'], server['name'], secure_conn_str))
                 with Oracle(connection_string) as db:
                     def get_nonexistant_policies(cur):
                         BOT_LOGGER.info('Пользователь %s ищет несуществующие полисы среди (%s): %s' %
