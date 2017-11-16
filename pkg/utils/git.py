@@ -13,5 +13,8 @@ except:
 
 def get_top_commit(short=True):
     if git:
-        commit = git('rev-parse', '--short', 'HEAD') if short else git('rev-parse', 'HEAD')
-        return commit.strip('\n')
+        try:
+            commit = git('rev-parse', '--short', 'HEAD') if short else git('rev-parse', 'HEAD')
+            return commit.strip('\n')
+        except:
+            pass
