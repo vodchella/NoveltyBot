@@ -4,7 +4,7 @@
 from cfg.external import SERVERS
 from pkg.sessions import *
 from pkg.bot import bot
-from pkg.bot.common import send_menu_main, send_menu_select_server, check_novelty_auth, not_authorized
+from pkg.bot.common import send_menu_main, send_menu_select_server, check_novelty_auth_by_session, not_authorized
 from pkg.bot.reload_metadata import reload_metadata
 from pkg.bot.unset_rescinding_reason import unset_rescinding_reason
 from pkg.bot.set_credentials import handler_set_credentials
@@ -35,13 +35,12 @@ def handler_select_server(c):
         if servers:
             server = servers[0]
             set_last_server(session, server)
-            if action_id == BOT_ACTION_RELOAD_METADATA:
-                reload_metadata(session, c.message.chat.id)
-                send_menu_main(c.message.chat.id)
-            elif action_id == BOT_ACTION_UNSET_RESCINDING_REASON:
-                if check_novelty_auth(c.message.chat.id, session, server):
-                    unset_rescinding_reason(c.message.chat.id)
-                else:
+            if check_novelty_auth_by_session(c.message.chat.id, session):
+                if action_id == BOT_ACTION_RELOAD_METADATA:
+                    reload_metadata(session, c.message.chat.id)
                     send_menu_main(c.message.chat.id)
+                elif action_id == BOT_ACTION_UNSET_RESCINDING_REASON:
+                    unset_rescinding_reason(c.message.chat.id)
+
     else:
         not_authorized(c.message.chat.id)

@@ -23,6 +23,10 @@ MODULES = [
     {
         'name': 'sh',
         'url': 'https://github.com/amoffat/sh'
+    },
+    {
+        'name': 'ldap3',
+        'url': 'https://github.com/cannatag/ldap3'
     }
 ]
 

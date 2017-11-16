@@ -34,6 +34,11 @@ def get_local_addresses():
     return bot_cfg.LOCAL_ADDRESSES
 
 
+def get_ldap_settings():
+    load_config()
+    return bot_cfg.SERVER_LOCAL_ADDRESS_LDAP, bot_cfg.LDAP_PORT, bot_cfg.LDAP_DOMAIN
+
+
 def get_smbcredentials(file_name=None):
     fname = file_name
     if not file_name:
