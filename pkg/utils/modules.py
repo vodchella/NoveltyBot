@@ -9,7 +9,7 @@ from pkg.utils.console import panic
 MODULES = [
     {
         'name': 'cx_Oracle',
-        'url': 'http://cx-oracle.sourceforge.net/'
+        'url': 'http://cx-oracle.sourceforge.net'
     },
     {
         'name': 'telebot',
@@ -19,6 +19,10 @@ MODULES = [
     {
         'name': 'pid',
         'url': 'https://github.com/trbs/pid'
+    },
+    {
+        'name': 'sh',
+        'url': 'https://github.com/amoffat/sh'
     }
 ]
 

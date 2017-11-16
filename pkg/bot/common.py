@@ -8,14 +8,16 @@ from pkg.constants.bot_actions import BOT_ACTIONS_MAIN
 from pkg.constants.emoji import EMOJI_WHITE_HEAVY_CHECK_MARK
 from pkg.utils.logger import BOT_LOGGER
 from pkg.utils.console import get_raised_error
+from pkg.utils.bot_version import get_bot_version_str
 from pkg.connectors.novelty import Novelty
 
 
-def send_menu_main(chat_id):
+def send_menu_main(chat_id, greeting=False):
     keyboard = telebot.types.InlineKeyboardMarkup(row_width=1)
     keyboard.add(*[telebot.types.InlineKeyboardButton(text=name,
                                                       callback_data=data) for (data, name) in BOT_ACTIONS_MAIN])
-    bot.send_message(chat_id, 'Что хочешь сделать?', reply_markup=keyboard)
+    greeting_msg = '%s приветствует тебя!\n' % get_bot_version_str() if greeting else ''
+    bot.send_message(chat_id, greeting_msg + 'Что хочешь сделать?', reply_markup=keyboard)
 
 
 def send_menu_select_server(chat_id, action_id):
