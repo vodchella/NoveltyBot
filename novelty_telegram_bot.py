@@ -19,8 +19,9 @@ def handler_start(message):
 
 if __name__ == '__main__':
     os.environ['NLS_LANG'] = 'Russian.AL32UTF8'
-    with pid.PidFile(BOT_PID_FILE, piddir=tempfile.gettempdir()):
+    with pid.PidFile(BOT_PID_FILE, piddir=tempfile.gettempdir()) as p:
         BOT_LOGGER.info('%s начал работу' % get_bot_version_str())
+        BOT_LOGGER.info('PID: %s' % p.pid)
         BOT_LOGGER.info('ORACLE_HOME: %s' %
                         (os.environ['ORACLE_HOME'] if 'ORACLE_HOME' in os.environ else None))
         BOT_LOGGER.info('LD_LIBRARY_PATH: %s' %
