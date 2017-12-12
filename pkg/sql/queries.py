@@ -25,11 +25,24 @@ where  not exists (select 1
                    where  p.policy_number = n.num)
 """
 
+GET_POLICIES_WITHOUT_BSO = """
+with n as (%s)
+select listagg(n.num, ', ')
+       within group (order by n.num) as num_list,
+       count(*) as cnt
+from   n
+where  exists (select 1
+               from   policies p
+               where  p.policy_number = n.num and
+                      p.bso_number_id is null)
+"""
+
 UPDATE_RESCINDING_REASON_TO_NULL = """
 update policies p
 set    p.resciding_reason_id = null,
        p.resciding_date = null
-where  p.policy_number in (%s)
+where  p.policy_number in (%s) and
+       p.bso_number_id is not null
 """
 
 SELECT_TEXT_FROM_DUAL = """

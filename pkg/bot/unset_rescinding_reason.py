@@ -12,6 +12,7 @@ from pkg.constants.emoji import EMOJI_CROSS_MARK, EMOJI_WHITE_HEAVY_CHECK_MARK
 from pkg.constants.bot_messages import BOT_MESSAGE_EXCEPTION
 from pkg.sql.queries import \
     GET_NONEXISTANT_POLICIES, \
+    GET_POLICIES_WITHOUT_BSO, \
     UPDATE_RESCINDING_REASON_TO_NULL, \
     SET_USER_ID, \
     SELECT_TEXT_FROM_DUAL
@@ -63,6 +64,14 @@ def handler_set_policies(message):
                         for row in cur:
                             return row[0], row[1]
 
+                    def get_policies_without_bso(cur):
+                        BOT_LOGGER.info('Пользователь %s ищет полисы без БСО среди (%s): %s' %
+                                        (session['login'], len(policies), policies_str))
+                        sql = GET_POLICIES_WITHOUT_BSO % policies_tbl
+                        cur.execute(sql.encode('utf-8'))
+                        for row in cur:
+                            return row[0], row[1]
+
                     def erase_policies_rescinding_reason(cur):
                         BOT_LOGGER.info('Пользователь %s обнуляет причину расторжения у полисов: %s' %
                                         (session['login'], policies_str))
@@ -72,15 +81,24 @@ def handler_set_policies(message):
                         cur.execute(sql.encode('utf-8'))
                         return cur.rowcount
 
-                    p_list, p_count = db.execute(get_nonexistant_policies)
-                    if p_count:
-                        BOT_LOGGER.info('Пользователь %s не нашёл некоторые полисы (%s): %s' %
-                                        (session['login'], p_count, policies_str))
+                    p_list, p_count_1 = db.execute(get_policies_without_bso)
+                    if p_count_1:
+                        BOT_LOGGER.info('Пользователь %s нашёл полисы без БСО (%s): %s' %
+                                        (session['login'], p_count_1, p_list))
                         bot.send_message(message.chat.id,
                                          EMOJI_CROSS_MARK +
-                                         ' Некоторые полисы (%s) не найдены: %s' % (p_count, p_list))
+                                         ' Некоторые полисы (%s) без БСО, они не будут обновлены: %s' % (p_count_1,
+                                                                                                         p_list))
 
-                    if p_count == len(policies):
+                    p_list, p_count_2 = db.execute(get_nonexistant_policies)
+                    if p_count_2:
+                        BOT_LOGGER.info('Пользователь %s не нашёл некоторые полисы (%s): %s' %
+                                        (session['login'], p_count_2, p_list))
+                        bot.send_message(message.chat.id,
+                                         EMOJI_CROSS_MARK +
+                                         ' Некоторые полисы (%s) не найдены: %s' % (p_count_2, p_list))
+
+                    if (p_count_1 + p_count_2) >= len(policies):
                         p_count = 0
                     else:
                         p_count = db.execute(erase_policies_rescinding_reason)
